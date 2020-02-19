@@ -29,8 +29,22 @@ public class JPackage extends JNode implements Comparable<JPackage> {
 		setEnabled(wrapper);
 		List<JavaClass> javaClasses = pkg.getClasses();
 		this.classes = new ArrayList<>(javaClasses.size());
-		for (JavaClass javaClass : javaClasses) {
-			classes.add(new JClass(javaClass));
+		if(wrapper.getEnumDisabled()){
+			for (JavaClass javaClass : javaClasses) {
+				if(!javaClass.getClassNode().isEnum()){
+					classes.add(new JClass(javaClass));
+				}
+			}
+		}
+		else{
+			
+			for (JavaClass javaClass : javaClasses) {
+				classes.add(new JClass(javaClass));
+			}
+		}
+
+		if(classes.size() == 0){
+			setEnabled(false);
 		}
 		update();
 	}
@@ -40,6 +54,10 @@ public class JPackage extends JNode implements Comparable<JPackage> {
 		this.name = name;
 		setEnabled(wrapper);
 		this.classes = new ArrayList<>(1);
+	}
+
+	private void setEnabled(boolean bool){
+		this.enabled = bool;
 	}
 
 	private void setEnabled(JadxWrapper wrapper) {

@@ -56,6 +56,7 @@ public class JadxSettings extends JadxCLIArgs {
 	private boolean autoStartJobs = false;
 	protected String excludedPackages = "";
 	private boolean autoSaveProject = false;
+	private boolean enumDisabled = false;
 
 	private boolean showHeapUsageBar = true;
 
@@ -313,6 +314,14 @@ public class JadxSettings extends JadxCLIArgs {
 
 	public void setFsCaseSensitive(boolean fsCaseSensitive) {
 		this.fsCaseSensitive = fsCaseSensitive;
+	}
+
+	public void setEnumDisabled(boolean enumDisabled){
+		this.enumDisabled = enumDisabled;
+	}
+
+	public boolean isEnumDisabled(){
+		return enumDisabled;
 	}
 
 	public boolean isAutoStartJobs() {

@@ -34,14 +34,17 @@ public class JSources extends JNode {
 		removeAllChildren();
 		if (flatPackages) {
 			for (JavaPackage pkg : wrapper.getPackages()) {
-				add(new JPackage(pkg, wrapper));
+				JPackage j = new JPackage(pkg,wrapper);
+				if(j.getClasses().size() !=0){
+					add(new JPackage(pkg, wrapper));
+				}
 			}
 		} else {
 			// build packages hierarchy
 			List<JPackage> rootPkgs = getHierarchyPackages(wrapper.getPackages());
 			for (JPackage jPackage : rootPkgs) {
-				jPackage.update();
-				add(jPackage);
+					jPackage.update();
+					add(jPackage);
 			}
 		}
 	}
@@ -55,7 +58,11 @@ public class JSources extends JNode {
 	List<JPackage> getHierarchyPackages(List<JavaPackage> packages) {
 		Map<String, JPackage> pkgMap = new HashMap<>();
 		for (JavaPackage pkg : packages) {
-			addPackage(pkgMap, new JPackage(pkg, wrapper));
+				JPackage j = new JPackage(pkg,wrapper);
+				if(j.getClasses().size() !=0){
+					addPackage(pkgMap, new JPackage(pkg, wrapper));
+				}
+			
 		}
 		// merge packages without classes
 		boolean repeat;
