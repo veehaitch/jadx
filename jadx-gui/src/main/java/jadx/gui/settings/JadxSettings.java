@@ -74,7 +74,7 @@ public class JadxSettings extends JadxCLIArgs {
 	private String srhResourceFileExt = ".xml|.html|.js|.json|.txt";
 	private boolean keepCommonDialogOpen = false;
 	private boolean smaliAreaShowBytecode = false;
-
+	private boolean enumDisabled = false;
 	private int mainWindowVerticalSplitterLoc = 300;
 	private int debuggerStackFrameSplitterLoc = 300;
 	private int debuggerVarTreeSplitterLoc = 700;
@@ -346,6 +346,14 @@ public class JadxSettings extends JadxCLIArgs {
 
 	public void setFsCaseSensitive(boolean fsCaseSensitive) {
 		this.fsCaseSensitive = fsCaseSensitive;
+	}
+	
+	public void setEnumDisabled(boolean enumDisabled){
+		this.enumDisabled = enumDisabled;
+	}
+
+	public boolean isEnumDisabled(){
+		return enumDisabled;
 	}
 
 	public boolean isAutoStartJobs() {
