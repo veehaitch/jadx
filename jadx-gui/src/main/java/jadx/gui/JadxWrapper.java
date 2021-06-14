@@ -116,7 +116,7 @@ public class JadxWrapper {
 	}
 
 	public boolean getEnumDisabled(){
-		return settings.isEnumDisabled()
+		return settings.isEnumDisabled();
 	}
 
 	public List<JavaPackage> getPackages() {

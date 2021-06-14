@@ -65,9 +65,7 @@ public class JadxSettings extends JadxCLIArgs {
 	protected String excludedPackages = "";
 	private boolean autoSaveProject = false;
 	private boolean enumDisabled = false;
-
 	private boolean showHeapUsageBar = false;
-
 	private Map<String, WindowLocation> windowPos = new HashMap<>();
 	private int mainWindowExtendedState = JFrame.NORMAL;
 	private boolean codeAreaLineWrap = false;
@@ -75,7 +73,6 @@ public class JadxSettings extends JadxCLIArgs {
 	private String srhResourceFileExt = ".xml|.html|.js|.json|.txt";
 	private boolean keepCommonDialogOpen = false;
 	private boolean smaliAreaShowBytecode = false;
-	private boolean enumDisabled = false;
 	private int mainWindowVerticalSplitterLoc = 300;
 	private int debuggerStackFrameSplitterLoc = 300;
 	private int debuggerVarTreeSplitterLoc = 700;
@@ -349,14 +346,6 @@ public class JadxSettings extends JadxCLIArgs {
 		this.fsCaseSensitive = fsCaseSensitive;
 	}
 	
-	public void setEnumDisabled(boolean enumDisabled){
-		this.enumDisabled = enumDisabled;
-	}
-
-	public boolean isEnumDisabled(){
-		return enumDisabled;
-	}
-
 	public void setEnumDisabled(boolean enumDisabled){
 		this.enumDisabled = enumDisabled;
 	}

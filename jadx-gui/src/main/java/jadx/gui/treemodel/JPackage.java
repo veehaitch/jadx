@@ -9,6 +9,7 @@ import javax.swing.*;
 import org.jetbrains.annotations.NotNull;
 
 import jadx.api.JavaPackage;
+import jadx.api.JavaClass;
 import jadx.core.utils.Utils;
 import jadx.gui.JadxWrapper;
 import jadx.gui.utils.UiUtils;
@@ -31,7 +32,6 @@ public class JPackage extends JNode implements Comparable<JPackage> {
 				new ArrayList<>());
 		this.fullName = pkg.getName();
 		this.name = pkg.getName();
-		setEnabled(wrapper);
 		List<JavaClass> javaClasses = pkg.getClasses();
 		this.classes = new ArrayList<>(javaClasses.size());
 		if(wrapper.getEnumDisabled()){
@@ -47,19 +47,9 @@ public class JPackage extends JNode implements Comparable<JPackage> {
 				classes.add(new JClass(javaClass));
 			}
 		}
-
-		if(classes.size() == 0){
-			setEnabled(false);
-		}
-		else{
-
-			for (JavaClass javaClass : javaClasses) {
-				classes.add(new JClass(javaClass));
-			}
-		}
-
 		if(classes.size() == 0){
 			setEnabled(false);				
+        }
 		update();
 	}
 
@@ -79,12 +69,11 @@ public class JPackage extends JNode implements Comparable<JPackage> {
 		this.innerPackages = innerPackages;
 	}
 
-	private static boolean isPkgEnabled(JadxWrapper wrapper, String fullPkgName) {
 	private void setEnabled(boolean bool){
 		this.enabled = bool;
 	}
 
-	private void setEnabled(JadxWrapper wrapper) {
+	private static boolean isPkgEnabled(JadxWrapper wrapper, String fullPkgName) {
 		List<String> excludedPackages = wrapper.getExcludedPackages();
 		return excludedPackages.isEmpty()
 				|| excludedPackages.stream().filter(p -> !p.isEmpty())
@@ -144,9 +133,6 @@ public class JPackage extends JNode implements Comparable<JPackage> {
 	public void setClasses(List<JClass> classes) {
 		this.classes = classes;
 	}
-	private void setEnabled(boolean bool){
-		this.enabled = bool;
-	}
 
 	@Override
 	public Icon getIcon() {
@@ -193,7 +179,6 @@ public class JPackage extends JNode implements Comparable<JPackage> {
 	public String makeLongString() {
 		return name;
 	}
-
 	public boolean isEnabled() {
 		return enabled;
 	}
