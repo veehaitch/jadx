@@ -29,22 +29,6 @@ public class JPackage extends JNode implements Comparable<JPackage> {
 				isPkgEnabled(wrapper, pkg.getName()),
 				Utils.collectionMap(pkg.getClasses(), JClass::new),
 				new ArrayList<>());
-		if(wrapper.getEnumDisabled()){
-			for (JavaClass javaClass : javaClasses) {
-				if(!javaClass.getClassNode().isEnum()){
-					classes.add(new JClass(javaClass));
-				}
-			}
-		}
-		else{
-
-			for (JavaClass javaClass : javaClasses) {
-				classes.add(new JClass(javaClass));
-			}
-		}
-
-		if(classes.size() == 0){
-			setEnabled(false);				
 		update();
 	}
 
@@ -123,9 +107,6 @@ public class JPackage extends JNode implements Comparable<JPackage> {
 
 	public void setClasses(List<JClass> classes) {
 		this.classes = classes;
-	}
-	private void setEnabled(boolean bool){
-		this.enabled = bool;
 	}
 
 	@Override
