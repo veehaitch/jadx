@@ -29,12 +29,27 @@ public class JPackage extends JNode implements Comparable<JPackage> {
 				isPkgEnabled(wrapper, pkg.getName()),
 				Utils.collectionMap(pkg.getClasses(), JClass::new),
 				new ArrayList<>());
+		this.fullName = pkg.getName();
+		this.name = pkg.getName();
+		setEnabled(wrapper);
+		List<JavaClass> javaClasses = pkg.getClasses();
+		this.classes = new ArrayList<>(javaClasses.size());
 		if(wrapper.getEnumDisabled()){
 			for (JavaClass javaClass : javaClasses) {
 				if(!javaClass.getClassNode().isEnum()){
 					classes.add(new JClass(javaClass));
 				}
 			}
+		}
+		else{
+			
+			for (JavaClass javaClass : javaClasses) {
+				classes.add(new JClass(javaClass));
+			}
+		}
+
+		if(classes.size() == 0){
+			setEnabled(false);
 		}
 		else{
 
@@ -65,6 +80,11 @@ public class JPackage extends JNode implements Comparable<JPackage> {
 	}
 
 	private static boolean isPkgEnabled(JadxWrapper wrapper, String fullPkgName) {
+	private void setEnabled(boolean bool){
+		this.enabled = bool;
+	}
+
+	private void setEnabled(JadxWrapper wrapper) {
 		List<String> excludedPackages = wrapper.getExcludedPackages();
 		return excludedPackages.isEmpty()
 				|| excludedPackages.stream().filter(p -> !p.isEmpty())
