@@ -115,7 +115,7 @@ public class JadxWrapper {
 		settings.sync();
 	}
 
-	public boolean getEnumDisabled(){
+	public boolean getEnumDisabled() {
 		return settings.isEnumDisabled();
 	}
 

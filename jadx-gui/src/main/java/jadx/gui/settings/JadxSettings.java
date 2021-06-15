@@ -345,12 +345,12 @@ public class JadxSettings extends JadxCLIArgs {
 	public void setFsCaseSensitive(boolean fsCaseSensitive) {
 		this.fsCaseSensitive = fsCaseSensitive;
 	}
-	
-	public void setEnumDisabled(boolean enumDisabled){
+
+	public void setEnumDisabled(boolean enumDisabled) {
 		this.enumDisabled = enumDisabled;
 	}
 
-	public boolean isEnumDisabled(){
+	public boolean isEnumDisabled() {
 		return enumDisabled;
 	}
 

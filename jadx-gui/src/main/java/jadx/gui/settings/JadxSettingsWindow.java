@@ -465,7 +465,7 @@ public class JadxSettingsWindow extends JDialog {
 		other.addRow(NLS.str("preferences.threads"), threadsCount);
 		other.addRow(NLS.str("preferences.excludedPackages"), NLS.str("preferences.excludedPackages.tooltip"),
 				editExcludedPackages);
-		other.addRow(NLS.str("preferences.disableEnum"),disableEnum);
+		other.addRow(NLS.str("preferences.disableEnum"), disableEnum);
 		other.addRow(NLS.str("preferences.start_jobs"), autoStartJobs);
 		other.addRow(NLS.str("preferences.showInconsistentCode"), showInconsistentCode);
 		other.addRow(NLS.str("preferences.escapeUnicode"), escapeUnicode);

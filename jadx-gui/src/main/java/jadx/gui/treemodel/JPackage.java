@@ -8,8 +8,8 @@ import javax.swing.*;
 
 import org.jetbrains.annotations.NotNull;
 
-import jadx.api.JavaPackage;
 import jadx.api.JavaClass;
+import jadx.api.JavaPackage;
 import jadx.core.utils.Utils;
 import jadx.gui.JadxWrapper;
 import jadx.gui.utils.UiUtils;
@@ -34,22 +34,21 @@ public class JPackage extends JNode implements Comparable<JPackage> {
 		this.name = pkg.getName();
 		List<JavaClass> javaClasses = pkg.getClasses();
 		this.classes = new ArrayList<>(javaClasses.size());
-		if(wrapper.getEnumDisabled()){
+		if (wrapper.getEnumDisabled()) {
 			for (JavaClass javaClass : javaClasses) {
-				if(!javaClass.getClassNode().isEnum()){
+				if (!javaClass.getClassNode().isEnum()) {
 					classes.add(new JClass(javaClass));
 				}
 			}
-		}
-		else{
-			
+		} else {
+
 			for (JavaClass javaClass : javaClasses) {
 				classes.add(new JClass(javaClass));
 			}
 		}
-		if(classes.size() == 0){
-			setEnabled(false);				
-        }
+		if (classes.size() == 0) {
+			setEnabled(false);
+		}
 		update();
 	}
 
@@ -69,7 +68,7 @@ public class JPackage extends JNode implements Comparable<JPackage> {
 		this.innerPackages = innerPackages;
 	}
 
-	private void setEnabled(boolean bool){
+	private void setEnabled(boolean bool) {
 		this.enabled = bool;
 	}
 
@@ -179,6 +178,7 @@ public class JPackage extends JNode implements Comparable<JPackage> {
 	public String makeLongString() {
 		return name;
 	}
+
 	public boolean isEnabled() {
 		return enabled;
 	}
