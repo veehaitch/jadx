@@ -29,9 +29,8 @@ import static javax.swing.KeyStroke.getKeyStroke;
 public final class FridaAction extends JNodeMenuAction<JNode> {
 	private static final Logger LOG = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 	private static final long serialVersionUID = 4692546569977976384L;
-	private boolean is_initial = true;
-	private transient JTextField renameField;
-	private String method_name;
+	private boolean isInitial = true;
+	private String methodName;
 
 	public FridaAction(CodeArea codeArea) {
 
@@ -55,40 +54,40 @@ public final class FridaAction extends JNodeMenuAction<JNode> {
 			if (node instanceof JMethod) {
 				;
 				JMethod n = (JMethod) node;
-				MethodNode method_node = n.getJavaMethod().getMethodNode();
-				MethodInfo mi = method_node.getMethodInfo();
-				method_name = mi.getName();
-				if (method_name.equals("<init>")) {
-					method_name = "$init";
+				MethodNode methodNode = n.getJavaMethod().getMethodNode();
+				MethodInfo mi = methodNode.getMethodInfo();
+				methodName = mi.getName();
+				if (methodName.equals("<init>")) {
+					methodName = "$init";
 				}
-				String full_class_name = method_node.getParentClass().getFullName();
-				String class_name = method_node.getParentClass().getShortName();
+				String fullClassName = methodNode.getParentClass().getFullName();
+				String className = methodNode.getParentClass().getShortName();
 
 				LOG.info("node is jmethod");
-				LOG.info(full_class_name + "." + method_name);
+				LOG.info(fullClassName + "." + methodName);
 
 				// overload ?
-				List<MethodNode> methods = method_node.getParentClass().getMethods();
+				List<MethodNode> methods = methodNode.getParentClass().getMethods();
 
-				List<MethodNode> filteredmethod = methods.stream().filter(m -> m.getName().equals(method_name))
+				List<MethodNode> filteredmethod = methods.stream().filter(m -> m.getName().equals(methodName))
 						.filter(m -> m.getArgTypes().size() == mi.getArgumentsTypes().size()).collect(Collectors.toList());
 				StringBuilder sb = new StringBuilder();
-				String overload_str = "";
+				String overloadStr = "";
 				if (filteredmethod.size() > 1) {
-					List<ArgType> method_argss = mi.getArgumentsTypes();
-					for (ArgType argType : method_argss) {
+					List<ArgType> methodArgs = mi.getArgumentsTypes();
+					for (ArgType argType : methodArgs) {
 						sb.append("'" + argType.toString() + "', ");
 					}
 					if (sb.length() > 2) {
 						sb.setLength(sb.length() - 2);
 					}
-					overload_str = sb.toString();
+					overloadStr = sb.toString();
 
 				}
 				StringBuilder sb2 = new StringBuilder();
-				String function_parameters = "";
+				String functionParameters = "";
 				List<VariableNode> vl =
-						method_node.getVars().stream().filter(v -> v.getVarKind() == VarKind.ARG).collect(Collectors.toList());
+						methodNode.getVars().stream().filter(v -> v.getVarKind() == VarKind.ARG).collect(Collectors.toList());
 				if (vl.size() > 0) {
 
 					for (VariableNode var : vl) {
@@ -97,34 +96,34 @@ public final class FridaAction extends JNodeMenuAction<JNode> {
 					if (sb2.length() > 1) {
 						sb2.setLength(sb2.length() - 1);
 					}
-					function_parameters = sb2.toString();
+					functionParameters = sb2.toString();
 				}
 				// if so extract arguments
 				// argument size
 
-				String func_defin = "";
-				if (overload_str != "") {
-					func_defin = String.format("%s.%s.overload(%s).implementation", class_name, method_name, overload_str);
+				String funcDefin = "";
+				if (overloadStr != "") {
+					funcDefin = String.format("%s.%s.overload(%s).implementation", className, methodName, overloadStr);
 				} else {
-					func_defin = String.format("%s.%s.implementation", class_name, method_name);
+					funcDefin = String.format("%s.%s.implementation", className, methodName);
 				}
-				String func_defin2 = "";
-				if (function_parameters != "") {
-					func_defin2 = String.format("%s = function(%s){\n}", func_defin, function_parameters);
+				String funcDefin2 = "";
+				if (functionParameters != "") {
+					funcDefin2 = String.format("%s = function(%s){\n}", funcDefin, functionParameters);
 				} else {
-					func_defin2 = String.format("%s = function(){\n}", func_defin);
+					funcDefin2 = String.format("%s = function(){\n}", funcDefin);
 				}
-				String var_defin = "";
-				if (is_initial) {
-					var_defin = String.format("var %s = Java.use(\"%s\")\n%s", class_name, full_class_name, func_defin2);
+				String varDefin = "";
+				if (isInitial) {
+					varDefin = String.format("var %s = Java.use(\"%s\")\n%s", className, fullClassName, funcDefin2);
 				} else {
-					var_defin = func_defin2;
+					varDefin = funcDefin2;
 				}
-				LOG.info("frida code : " + var_defin);
+				LOG.info("frida code : " + varDefin);
 
 				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 
-				StringSelection selection = new StringSelection(var_defin);
+				StringSelection selection = new StringSelection(varDefin);
 				clipboard.setContents(selection, selection);
 			} else if (node instanceof JClass) {
 				LOG.info("node is jclass");
@@ -135,7 +134,7 @@ public final class FridaAction extends JNodeMenuAction<JNode> {
 			}
 
 		}
-		is_initial = false;
+		isInitial = false;
 	}
 
 	@Override
