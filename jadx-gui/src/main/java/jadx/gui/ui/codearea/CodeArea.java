@@ -90,6 +90,7 @@ public final class CodeArea extends AbstractCodeArea {
 
 	private void addMenuItems() {
 		FindUsageAction findUsage = new FindUsageAction(this);
+		FridaAction fridaAction = new FridaAction(this);
 		GoToDeclarationAction goToDeclaration = new GoToDeclarationAction(this);
 		RenameAction rename = new RenameAction(this);
 		CommentAction comment = new CommentAction(this);
@@ -97,11 +98,13 @@ public final class CodeArea extends AbstractCodeArea {
 		JPopupMenu popup = getPopupMenu();
 		popup.addSeparator();
 		popup.add(findUsage);
+		popup.add(fridaAction);
 		popup.add(goToDeclaration);
 		popup.add(comment);
 		popup.add(new CommentSearchAction(this));
 		popup.add(rename);
 		popup.addPopupMenuListener(findUsage);
+		popup.addPopupMenuListener(fridaAction);
 		popup.addPopupMenuListener(goToDeclaration);
 		popup.addPopupMenuListener(comment);
 		popup.addPopupMenuListener(rename);
