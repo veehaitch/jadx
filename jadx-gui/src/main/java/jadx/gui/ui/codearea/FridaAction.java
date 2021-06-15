@@ -52,7 +52,6 @@ public final class FridaAction extends JNodeMenuAction<JNode> {
 
 		if (node != null) {
 			if (node instanceof JMethod) {
-				;
 				JMethod n = (JMethod) node;
 				MethodNode methodNode = n.getJavaMethod().getMethodNode();
 				MethodInfo mi = methodNode.getMethodInfo();
@@ -102,13 +101,13 @@ public final class FridaAction extends JNodeMenuAction<JNode> {
 				// argument size
 
 				String funcDefin = "";
-				if (overloadStr != "") {
+				if (overloadStr.equals("")) {
 					funcDefin = String.format("%s.%s.overload(%s).implementation", className, methodName, overloadStr);
 				} else {
 					funcDefin = String.format("%s.%s.implementation", className, methodName);
 				}
 				String funcDefin2 = "";
-				if (functionParameters != "") {
+				if (functionParameters.equals("")) {
 					funcDefin2 = String.format("%s = function(%s){\n}", funcDefin, functionParameters);
 				} else {
 					funcDefin2 = String.format("%s = function(){\n}", funcDefin);
