@@ -22,6 +22,11 @@ Command line and GUI tools for producing Java source code from Android Dex and A
 - find usage
 - full text search
 
+**jadx-gui features added in this fork:**
+- Hide enum classes. Useful when analyzing malware with unused enum classes. Preferences -> Hide Enum Classes
+- Generate frida template for selected function. Takes care of overload signatures. Doesn't include `var klass = Java.use..` if you copied already. Right Click to function -> Copy as frida class/method.
+
+
 **Upcoming unstable features:**
 - smali debugger (thanks to [@LBJ-the-GOAT](https://github.com/LBJ-the-GOAT)), check [wiki page](https://github.com/skylot/jadx/wiki/Smali-debugger) for setup and usage
 
