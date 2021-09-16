@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import jadx.gui.ui.MainWindow;
-import jadx.gui.ui.ProgressPanel;
+import jadx.gui.ui.panel.ProgressPanel;
 import jadx.gui.utils.UiUtils;
 
 /**
@@ -64,6 +64,10 @@ public class BackgroundExecutor {
 
 	public void execute(String title, Runnable backgroundRunnable, Consumer<TaskStatus> onFinishUiRunnable) {
 		execute(new SimpleTask(title, Collections.singletonList(backgroundRunnable), onFinishUiRunnable));
+	}
+
+	public void execute(String title, Runnable backgroundRunnable) {
+		execute(new SimpleTask(title, Collections.singletonList(backgroundRunnable), null));
 	}
 
 	private ThreadPoolExecutor makeTaskQueueExecutor() {
@@ -125,7 +129,7 @@ public class BackgroundExecutor {
 						return cancelStatus;
 					}
 					setProgress(calcProgress(executor.getCompletedTaskCount()));
-					Thread.sleep(1000);
+					Thread.sleep(500);
 				}
 			} catch (InterruptedException e) {
 				LOG.debug("Task wait interrupted");

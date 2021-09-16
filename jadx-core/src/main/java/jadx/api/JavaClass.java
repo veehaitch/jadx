@@ -63,7 +63,7 @@ public final class JavaClass implements JavaNode {
 	}
 
 	public synchronized String getSmali() {
-		return cls.getSmali();
+		return cls.getDisassembledCode();
 	}
 
 	/**
@@ -221,6 +221,15 @@ public final class JavaClass implements JavaNode {
 	public List<JavaMethod> getMethods() {
 		loadLists();
 		return methods;
+	}
+
+	@Nullable
+	public JavaMethod searchMethodByShortId(String shortId) {
+		MethodNode methodNode = cls.searchMethodByShortId(shortId);
+		if (methodNode == null) {
+			return null;
+		}
+		return new JavaMethod(this, methodNode);
 	}
 
 	@Override

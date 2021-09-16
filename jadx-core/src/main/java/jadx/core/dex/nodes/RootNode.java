@@ -97,24 +97,19 @@ public class RootNode {
 		}
 		if (classes.size() != clsMap.size()) {
 			// class name duplication detected
-			classes.stream().collect(Collectors.groupingBy(ClassNode::getClassInfo))
-					.entrySet().stream()
-					.filter(entry -> entry.getValue().size() > 1)
-					.forEach(entry -> {
-						LOG.warn("Found duplicated class: {}, count: {}. Only one will be loaded!", entry.getKey(),
-								entry.getValue().size());
-						entry.getValue().forEach(cls -> cls.addAttr(AType.COMMENTS, "WARNING: Classes with same name are omitted"));
-					});
+			markDuplicatedClasses(classes);
 		}
 		classes = new ArrayList<>(clsMap.values());
-		// sort classes by name, expect top classes before inner
-		classes.sort(Comparator.comparing(ClassNode::getFullName));
-		initInnerClasses();
 
 		// print stats for loaded classes
 		int mthCount = classes.stream().mapToInt(c -> c.getMethods().size()).sum();
 		int insnsCount = classes.stream().flatMap(c -> c.getMethods().stream()).mapToInt(MethodNode::getInsnsCount).sum();
 		LOG.info("Loaded classes: {}, methods: {}, instructions: {}", classes.size(), mthCount, insnsCount);
+
+		// sort classes by name, expect top classes before inner
+		classes.sort(Comparator.comparing(ClassNode::getFullName));
+		// move inner classes
+		initInnerClasses();
 	}
 
 	private void addDummyClass(IClassData classData, Exception exc) {
@@ -133,6 +128,27 @@ public class RootNode {
 		}
 		ClassNode clsNode = ClassNode.addSyntheticClass(this, name, classData.getAccessFlags());
 		ErrorsCounter.error(clsNode, "Load error", exc);
+	}
+
+	private static void markDuplicatedClasses(List<ClassNode> classes) {
+		classes.stream()
+				.collect(Collectors.groupingBy(ClassNode::getClassInfo))
+				.entrySet()
+				.stream()
+				.filter(entry -> entry.getValue().size() > 1)
+				.forEach(entry -> {
+					List<String> sources = Utils.collectionMap(entry.getValue(), ClassNode::getInputFileName);
+					LOG.warn("Found duplicated class: {}, count: {}. Only one will be loaded!\n  {}",
+							entry.getKey(), entry.getValue().size(), String.join("\n  ", sources));
+					entry.getValue().forEach(cls -> {
+						String thisSource = cls.getInputFileName();
+						String otherSourceStr = sources.stream()
+								.filter(s -> !s.equals(thisSource))
+								.sorted()
+								.collect(Collectors.joining("\n  "));
+						cls.addAttr(AType.COMMENTS, "WARNING: Classes with same name are omitted:\n  " + otherSourceStr + '\n');
+					});
+				});
 	}
 
 	public void addClassNode(ClassNode clsNode) {
@@ -240,20 +256,25 @@ public class RootNode {
 				innerCls.getClassInfo().updateNames(this);
 			}
 		}
+		classes.forEach(ClassNode::updateParentClass);
 	}
 
 	public void runPreDecompileStage() {
+		boolean debugEnabled = LOG.isDebugEnabled();
 		for (IDexTreeVisitor pass : preDecompilePasses) {
-			long start = System.currentTimeMillis();
+			long start = debugEnabled ? System.currentTimeMillis() : 0;
 			try {
 				pass.init(this);
 			} catch (Exception e) {
 				LOG.error("Visitor init failed: {}", pass.getClass().getSimpleName(), e);
 			}
 			for (ClassNode cls : classes) {
+				if (cls.isInner()) {
+					continue;
+				}
 				DepthTraversal.visit(pass, cls);
 			}
-			if (LOG.isDebugEnabled()) {
+			if (debugEnabled) {
 				LOG.debug("{} time: {}ms", pass.getClass().getSimpleName(), System.currentTimeMillis() - start);
 			}
 		}

@@ -1,6 +1,7 @@
 package jadx.gui.ui.codearea;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -9,13 +10,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.Icon;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.KeyStroke;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 
-import org.fife.ui.rsyntaxtextarea.*;
-import org.fife.ui.rtextarea.*;
+import org.fife.ui.rsyntaxtextarea.FoldingAwareIconRowHeader;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextAreaEditorKit;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextAreaUI;
+import org.fife.ui.rsyntaxtextarea.RSyntaxUtilities;
+import org.fife.ui.rsyntaxtextarea.Style;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rsyntaxtextarea.SyntaxScheme;
+import org.fife.ui.rsyntaxtextarea.Theme;
+import org.fife.ui.rtextarea.Gutter;
+import org.fife.ui.rtextarea.GutterIconInfo;
+import org.fife.ui.rtextarea.IconRowHeader;
+import org.fife.ui.rtextarea.RTextArea;
+import org.fife.ui.rtextarea.RTextAreaUI;
 
 import jadx.gui.device.debugger.BreakpointManager;
 import jadx.gui.device.debugger.DbgUtils;
@@ -23,17 +39,17 @@ import jadx.gui.settings.JadxSettings;
 import jadx.gui.treemodel.JClass;
 import jadx.gui.treemodel.JNode;
 import jadx.gui.treemodel.TextNode;
-import jadx.gui.ui.ContentPanel;
+import jadx.gui.ui.panel.ContentPanel;
 import jadx.gui.utils.NLS;
 import jadx.gui.utils.UiUtils;
 
 public final class SmaliArea extends AbstractCodeArea {
 	private static final long serialVersionUID = 1334485631870306494L;
 
-	private static final Icon ICON_BREAKPOINT = UiUtils.openIcon("breakpoint");
-	private static final Icon ICON_BREAKPOINT_DISABLED = UiUtils.openIcon("breakpoint_disabled");
-	private static final Color BREAKPOINT_LINE_COLOR = Color.decode("#FF986E");
-	private static final Color DEBUG_LINE_COLOR = Color.decode("#80B4FF");
+	private static final Icon ICON_BREAKPOINT = UiUtils.openSvgIcon("debugger/db_set_breakpoint");
+	private static final Icon ICON_BREAKPOINT_DISABLED = UiUtils.openSvgIcon("debugger/db_disabled_breakpoint");
+	private static final Color BREAKPOINT_LINE_COLOR = Color.decode("#ad103c");
+	private static final Color DEBUG_LINE_COLOR = Color.decode("#9c1138");
 
 	private final JNode textNode;
 	private final JCheckBoxMenuItem cbUseSmaliV2;

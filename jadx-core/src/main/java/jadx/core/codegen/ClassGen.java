@@ -20,11 +20,12 @@ import jadx.api.JadxArgs;
 import jadx.api.plugins.input.data.AccessFlags;
 import jadx.api.plugins.input.data.annotations.EncodedType;
 import jadx.api.plugins.input.data.annotations.EncodedValue;
+import jadx.api.plugins.input.data.attributes.JadxAttrType;
 import jadx.core.Consts;
 import jadx.core.dex.attributes.AFlag;
 import jadx.core.dex.attributes.AType;
 import jadx.core.dex.attributes.AttrNode;
-import jadx.core.dex.attributes.fldinit.FieldInitAttr;
+import jadx.core.dex.attributes.FieldInitInsnAttr;
 import jadx.core.dex.attributes.nodes.EnumClassAttr;
 import jadx.core.dex.attributes.nodes.EnumClassAttr.EnumField;
 import jadx.core.dex.attributes.nodes.JadxError;
@@ -33,6 +34,7 @@ import jadx.core.dex.attributes.nodes.SkipMethodArgsAttr;
 import jadx.core.dex.info.AccessInfo;
 import jadx.core.dex.info.ClassInfo;
 import jadx.core.dex.instructions.args.ArgType;
+import jadx.core.dex.instructions.args.LiteralArg;
 import jadx.core.dex.instructions.args.PrimitiveType;
 import jadx.core.dex.instructions.mods.ConstructorInsn;
 import jadx.core.dex.nodes.ClassNode;
@@ -41,6 +43,7 @@ import jadx.core.dex.nodes.InsnNode;
 import jadx.core.dex.nodes.MethodNode;
 import jadx.core.dex.nodes.RootNode;
 import jadx.core.utils.CodeGenUtils;
+import jadx.core.utils.EncodedValueUtils;
 import jadx.core.utils.ErrorsCounter;
 import jadx.core.utils.Utils;
 import jadx.core.utils.android.AndroidResourcesUtils;
@@ -147,6 +150,7 @@ public class ClassGen {
 
 		annotationGen.addForClass(clsCode);
 		insertRenameInfo(clsCode, cls);
+		CodeGenUtils.addInputFileInfo(clsCode, cls);
 		clsCode.startLineWithNum(cls.getSourceLine()).add(af.makeString());
 		if (af.isInterface()) {
 			if (af.isAnnotation()) {
@@ -320,12 +324,12 @@ public class ClassGen {
 
 	public void addMethodCode(ICodeWriter code, MethodNode mth) throws CodegenException {
 		CodeGenUtils.addComments(code, mth);
+		insertDecompilationProblems(code, mth);
 		if (mth.isNoCode()) {
 			MethodGen mthGen = new MethodGen(this, mth);
 			mthGen.addDefinition(code);
 			code.add(';');
 		} else {
-			insertDecompilationProblems(code, mth);
 			boolean badCode = mth.contains(AFlag.INCONSISTENT_CODE);
 			if (badCode && showInconsistentCode) {
 				mth.remove(AFlag.INCONSISTENT_CODE);
@@ -395,21 +399,30 @@ public class ClassGen {
 		code.add(' ');
 		code.attachDefinition(f);
 		code.add(f.getAlias());
-		FieldInitAttr fv = f.get(AType.FIELD_INIT);
-		if (fv != null) {
+
+		FieldInitInsnAttr initInsnAttr = f.get(AType.FIELD_INIT_INSN);
+		if (initInsnAttr != null) {
+			InsnGen insnGen = makeInsnGen(initInsnAttr.getInsnMth());
 			code.add(" = ");
-			if (fv.isConst()) {
-				EncodedValue encodedValue = fv.getEncodedValue();
-				if (encodedValue.getType() == EncodedType.ENCODED_NULL) {
+			addInsnBody(insnGen, code, initInsnAttr.getInsn());
+		} else {
+			EncodedValue constVal = f.get(JadxAttrType.CONSTANT_VALUE);
+			if (constVal != null) {
+				code.add(" = ");
+				if (constVal.getType() == EncodedType.ENCODED_NULL) {
 					code.add(TypeGen.literalToString(0, f.getType(), cls, fallback));
 				} else {
-					if (!AndroidResourcesUtils.handleResourceFieldValue(cls, code, encodedValue)) {
-						annotationGen.encodeValue(cls.root(), code, encodedValue);
+					Object val = EncodedValueUtils.convertToConstValue(constVal);
+					if (val instanceof LiteralArg) {
+						long lit = ((LiteralArg) val).getLiteral();
+						if (!AndroidResourcesUtils.handleResourceFieldValue(cls, code, lit, f.getType())) {
+							// force literal type to be same as field (java bytecode can use different type)
+							code.add(TypeGen.literalToString(lit, f.getType(), cls, fallback));
+						}
+					} else {
+						annotationGen.encodeValue(cls.root(), code, constVal);
 					}
 				}
-			} else if (fv.isInsn()) {
-				InsnGen insnGen = makeInsnGen(fv.getInsnMth());
-				addInsnBody(insnGen, code, fv.getInsn());
 			}
 		}
 		code.add(';');
@@ -566,7 +579,7 @@ public class ClassGen {
 		addClsName(code, classNode.getClassInfo());
 	}
 
-	private void addClsName(ICodeWriter code, ClassInfo classInfo) {
+	public void addClsName(ICodeWriter code, ClassInfo classInfo) {
 		String clsName = useClassInternal(cls.getClassInfo(), classInfo);
 		code.add(clsName);
 	}

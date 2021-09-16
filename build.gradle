@@ -1,6 +1,6 @@
 plugins {
-	id 'com.github.ben-manes.versions' version '0.38.0'
-	id "com.diffplug.spotless" version "5.12.5"
+	id 'com.github.ben-manes.versions' version '0.39.0'
+	id 'com.diffplug.spotless' version '5.14.3'
 }
 
 ext.jadxVersion = System.getenv('JADX_VERSION') ?: "dev"
@@ -10,17 +10,12 @@ println("jadx version: ${jadxVersion}")
 allprojects {
 	apply plugin: 'java'
 	apply plugin: 'checkstyle'
+	apply plugin: 'maven-publish'
 
 	version = jadxVersion
 
 	sourceCompatibility = JavaVersion.VERSION_1_8
 	targetCompatibility = JavaVersion.VERSION_1_8
-
-	tasks.withType(JavaCompile) {
-		if (!"$it".contains(':jadx-samples:')) {
-			options.compilerArgs << '-Xlint' << '-Xlint:unchecked' << '-Xlint:deprecation'
-		}
-	}
 
 	compileJava {
 		options.encoding = "UTF-8"
@@ -32,20 +27,28 @@ allprojects {
 		}
 	}
 
-	dependencies {
-		implementation 'org.slf4j:slf4j-api:1.7.30'
-		compileOnly 'org.jetbrains:annotations:20.1.0'
+	publishing {
+		publications {
+			mavenJava(MavenPublication) {
+				from components.java
+			}
+		}
+	}
 
-		testImplementation 'ch.qos.logback:logback-classic:1.2.3'
+	dependencies {
+		implementation 'org.slf4j:slf4j-api:1.7.32'
+		compileOnly 'org.jetbrains:annotations:22.0.0'
+
+		testImplementation 'ch.qos.logback:logback-classic:1.2.5'
 		testImplementation 'org.hamcrest:hamcrest-library:2.2'
-		testImplementation 'org.mockito:mockito-core:3.10.0'
-		testImplementation 'org.assertj:assertj-core:3.19.0'
+		testImplementation 'org.mockito:mockito-core:3.12.1'
+		testImplementation 'org.assertj:assertj-core:3.20.2'
 
 		testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
 		testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
 
 		testImplementation 'org.eclipse.jdt.core.compiler:ecj:4.6.1'
-		testCompileOnly 'org.jetbrains:annotations:20.1.0'
+		testCompileOnly 'org.jetbrains:annotations:22.0.0'
 	}
 
 	test {
@@ -56,11 +59,6 @@ allprojects {
 		mavenLocal()
 		mavenCentral()
 		google()
-	}
-
-	checkstyleMain {
-		// exclude all sources in samples module
-		exclude '**/samples/**'
 	}
 }
 
@@ -149,15 +147,9 @@ task dist {
 	}
 }
 
-task samples(dependsOn: 'jadx-samples:samples') {
-	group 'jadx'
-}
-
 task cleanBuildDir(type: Delete) {
 	group 'jadx'
 	delete buildDir
 }
-
-test.dependsOn(samples)
 
 clean.dependsOn(cleanBuildDir)

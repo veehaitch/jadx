@@ -5,12 +5,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.jetbrains.annotations.Nullable;
 
 import jadx.api.ICodeWriter;
 import jadx.api.plugins.input.insns.InsnData;
 import jadx.core.dex.attributes.AFlag;
+import jadx.core.dex.attributes.AType;
 import jadx.core.dex.attributes.nodes.LineAttrNode;
 import jadx.core.dex.instructions.InsnType;
 import jadx.core.dex.instructions.args.ArgType;
@@ -291,6 +294,40 @@ public class InsnNode extends LineAttrNode {
 	}
 
 	/**
+	 * Visit this instruction and all inner (wrapped) instructions
+	 */
+	public void visitInsns(Consumer<InsnNode> visitor) {
+		visitor.accept(this);
+		for (InsnArg arg : this.getArguments()) {
+			if (arg.isInsnWrap()) {
+				((InsnWrapArg) arg).getWrapInsn().visitInsns(visitor);
+			}
+		}
+	}
+
+	/**
+	 * Visit this instruction and all inner (wrapped) instructions
+	 * To terminate visiting return non-null value
+	 */
+	@Nullable
+	public <R> R visitInsns(Function<InsnNode, R> visitor) {
+		R result = visitor.apply(this);
+		if (result != null) {
+			return result;
+		}
+		for (InsnArg arg : this.getArguments()) {
+			if (arg.isInsnWrap()) {
+				InsnNode innerInsn = ((InsnWrapArg) arg).getWrapInsn();
+				R res = innerInsn.visitInsns(visitor);
+				if (res != null) {
+					return res;
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * 'Soft' equals, don't compare arguments, only instruction specific parameters.
 	 */
 	public boolean isSame(InsnNode other) {
@@ -344,6 +381,11 @@ public class InsnNode extends LineAttrNode {
 		copy.copyLines(this);
 		copy.setOffset(this.getOffset());
 		return copy;
+	}
+
+	public void copyAttributesFrom(InsnNode attrNode) {
+		super.copyAttributesFrom(attrNode);
+		this.addSourceLineFrom(attrNode);
 	}
 
 	/**
@@ -444,10 +486,26 @@ public class InsnNode extends LineAttrNode {
 			case CONST_CLASS:
 			case CMP_L:
 			case CMP_G:
+			case NOP:
 				return false;
 
 			default:
 				return true;
+		}
+	}
+
+	public void inheritMetadata(InsnNode sourceInsn) {
+		if (insnType == InsnType.RETURN) {
+			this.copyLines(sourceInsn);
+			if (this.contains(AFlag.SYNTHETIC)) {
+				this.setOffset(sourceInsn.getOffset());
+				this.rewriteAttributeFrom(sourceInsn, AType.CODE_COMMENTS);
+			} else {
+				this.copyAttributeFrom(sourceInsn, AType.CODE_COMMENTS);
+			}
+		} else {
+			this.copyAttributeFrom(sourceInsn, AType.CODE_COMMENTS);
+			this.addSourceLineFrom(sourceInsn);
 		}
 	}
 

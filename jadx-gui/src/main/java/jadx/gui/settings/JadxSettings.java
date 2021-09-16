@@ -33,6 +33,7 @@ import jadx.core.utils.exceptions.JadxRuntimeException;
 import jadx.gui.ui.MainWindow;
 import jadx.gui.ui.codearea.EditorTheme;
 import jadx.gui.utils.FontUtils;
+import jadx.gui.utils.LafManager;
 import jadx.gui.utils.LangLocale;
 import jadx.gui.utils.NLS;
 
@@ -41,7 +42,7 @@ public class JadxSettings extends JadxCLIArgs {
 
 	private static final Path USER_HOME = Paths.get(System.getProperty("user.home"));
 	private static final int RECENT_PROJECTS_COUNT = 15;
-	private static final int CURRENT_SETTINGS_VERSION = 12;
+	private static final int CURRENT_SETTINGS_VERSION = 13;
 
 	private static final Font DEFAULT_FONT = new RSyntaxTextArea().getFont();
 
@@ -60,12 +61,14 @@ public class JadxSettings extends JadxCLIArgs {
 	private String fontStr = "";
 	private String smaliFontStr = "";
 	private String editorThemePath = "";
+	private String lafTheme = LafManager.SYSTEM_THEME_NAME;
 	private LangLocale langLocale = NLS.defaultLocale();
 	private boolean autoStartJobs = false;
 	protected String excludedPackages = "";
 	private boolean autoSaveProject = false;
 	private boolean enumDisabled = false;
 	private boolean showHeapUsageBar = false;
+	private boolean alwaysSelectOpened = false;
 	private Map<String, WindowLocation> windowPos = new HashMap<>();
 	private int mainWindowExtendedState = JFrame.NORMAL;
 	private boolean codeAreaLineWrap = false;
@@ -236,6 +239,15 @@ public class JadxSettings extends JadxCLIArgs {
 	public void setShowHeapUsageBar(boolean showHeapUsageBar) {
 		this.showHeapUsageBar = showHeapUsageBar;
 		partialSync(settings -> settings.showHeapUsageBar = showHeapUsageBar);
+	}
+
+	public boolean isAlwaysSelectOpened() {
+		return alwaysSelectOpened;
+	}
+
+	public void setAlwaysSelectOpened(boolean showHeapUsageBar) {
+		this.alwaysSelectOpened = showHeapUsageBar;
+		partialSync(settings -> settings.alwaysSelectOpened = alwaysSelectOpened);
 	}
 
 	public String getExcludedPackages() {
@@ -437,6 +449,14 @@ public class JadxSettings extends JadxCLIArgs {
 		this.editorThemePath = editorThemePath;
 	}
 
+	public String getLafTheme() {
+		return lafTheme;
+	}
+
+	public void setLafTheme(String lafTheme) {
+		this.lafTheme = lafTheme;
+	}
+
 	public int getMainWindowExtendedState() {
 		return mainWindowExtendedState;
 	}
@@ -601,6 +621,10 @@ public class JadxSettings extends JadxCLIArgs {
 		}
 		if (fromVersion == 11) {
 			inlineMethods = true;
+			fromVersion++;
+		}
+		if (fromVersion == 12) {
+			alwaysSelectOpened = false;
 			fromVersion++;
 		}
 		if (fromVersion != CURRENT_SETTINGS_VERSION) {

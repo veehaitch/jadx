@@ -51,6 +51,30 @@ public class AccessInfo {
 		return new AccessInfo(accFlags & VISIBILITY_FLAGS, type);
 	}
 
+	public boolean isVisibilityWeakerThan(AccessInfo otherAccInfo) {
+		int thisVis = accFlags & VISIBILITY_FLAGS;
+		int otherVis = otherAccInfo.accFlags & VISIBILITY_FLAGS;
+		if (thisVis == otherVis) {
+			return false;
+		}
+		return orderedVisibility(thisVis) < orderedVisibility(otherVis);
+	}
+
+	private static int orderedVisibility(int flag) {
+		switch (flag) {
+			case AccessFlags.PRIVATE:
+				return 1;
+			case 0: // package-private
+				return 2;
+			case AccessFlags.PROTECTED:
+				return 3;
+			case AccessFlags.PUBLIC:
+				return 4;
+			default:
+				throw new JadxRuntimeException("Unexpected visibility flag: " + flag);
+		}
+	}
+
 	public boolean isPublic() {
 		return (accFlags & AccessFlags.PUBLIC) != 0;
 	}
@@ -123,6 +147,10 @@ public class AccessInfo {
 		return (accFlags & AccessFlags.VOLATILE) != 0;
 	}
 
+	public boolean isModuleInfo() {
+		return (accFlags & AccessFlags.MODULE) != 0;
+	}
+
 	public AFType getType() {
 		return type;
 	}
@@ -175,6 +203,9 @@ public class AccessInfo {
 			case CLASS:
 				if ((accFlags & AccessFlags.STRICT) != 0) {
 					code.append("strict ");
+				}
+				if (isModuleInfo()) {
+					code.append("/* module-info */ ");
 				}
 				if (Consts.DEBUG) {
 					if ((accFlags & AccessFlags.SUPER) != 0) {

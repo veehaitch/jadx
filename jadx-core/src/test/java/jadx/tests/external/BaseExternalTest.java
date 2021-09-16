@@ -31,22 +31,27 @@ public abstract class BaseExternalTest extends IntegrationTest {
 	protected abstract String getSamplesDir();
 
 	protected JadxArgs prepare(String inputFile) {
+		return prepare(new File(getSamplesDir(), inputFile));
+	}
+
+	protected JadxArgs prepare(File input) {
 		JadxArgs args = new JadxArgs();
-		args.getInputFiles().add(new File(getSamplesDir(), inputFile));
+		args.getInputFiles().add(input);
 		args.setOutDir(new File("../jadx-external-tests-tmp"));
 		return args;
 	}
 
-	protected void decompile(JadxArgs jadxArgs) {
-		decompile(jadxArgs, null, null);
+	protected JadxDecompiler decompile(JadxArgs jadxArgs) {
+		return decompile(jadxArgs, null, null);
 	}
 
-	protected void decompile(JadxArgs jadxArgs, String clsPatternStr) {
-		decompile(jadxArgs, clsPatternStr, null);
+	protected JadxDecompiler decompile(JadxArgs jadxArgs, String clsPatternStr) {
+		return decompile(jadxArgs, clsPatternStr, null);
 	}
 
-	protected void decompile(JadxArgs jadxArgs, @Nullable String clsPatternStr, @Nullable String mthPatternStr) {
+	protected JadxDecompiler decompile(JadxArgs jadxArgs, @Nullable String clsPatternStr, @Nullable String mthPatternStr) {
 		JadxDecompiler jadx = new JadxDecompiler(jadxArgs);
+		jadx.getPluginManager().unload("java-convert");
 		jadx.load();
 
 		if (clsPatternStr == null) {
@@ -56,11 +61,16 @@ public abstract class BaseExternalTest extends IntegrationTest {
 			processByPatterns(jadx, clsPatternStr, mthPatternStr);
 		}
 		printErrorReport(jadx);
+		return jadx;
 	}
 
 	private void processAll(JadxDecompiler jadx) {
 		for (JavaClass javaClass : jadx.getClasses()) {
-			javaClass.decompile();
+			try {
+				javaClass.decompile();
+			} catch (Exception e) {
+				LOG.error("Failed to decompile class: {}", javaClass, e);
+			}
 		}
 	}
 

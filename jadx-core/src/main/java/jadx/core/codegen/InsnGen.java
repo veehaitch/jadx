@@ -101,6 +101,10 @@ public class InsnGen {
 	}
 
 	public void addArg(ICodeWriter code, InsnArg arg, boolean wrap) throws CodegenException {
+		addArg(code, arg, wrap ? BODY_ONLY_FLAG : BODY_ONLY_NOWRAP_FLAGS);
+	}
+
+	public void addArg(ICodeWriter code, InsnArg arg, Set<Flags> flags) throws CodegenException {
 		if (arg.isRegister()) {
 			CodeVar codeVar = CodeGenUtils.getCodeVar((RegisterArg) arg);
 			if (codeVar != null) {
@@ -113,7 +117,7 @@ public class InsnGen {
 		} else if (arg.isLiteral()) {
 			code.add(lit((LiteralArg) arg));
 		} else if (arg.isInsnWrap()) {
-			addWrappedArg(code, (InsnWrapArg) arg, wrap);
+			addWrappedArg(code, (InsnWrapArg) arg, flags);
 		} else if (arg.isNamed()) {
 			if (arg instanceof NamedArg) {
 				VariableNode node = mth.getVariable(((NamedArg) arg).getIndex());
@@ -127,15 +131,14 @@ public class InsnGen {
 		}
 	}
 
-	private void addWrappedArg(ICodeWriter code, InsnWrapArg arg, boolean wrap) throws CodegenException {
+	private void addWrappedArg(ICodeWriter code, InsnWrapArg arg, Set<Flags> flags) throws CodegenException {
 		InsnNode wrapInsn = arg.getWrapInsn();
 		if (wrapInsn.contains(AFlag.FORCE_ASSIGN_INLINE)) {
 			code.add('(');
 			makeInsn(wrapInsn, code, Flags.INLINE);
 			code.add(')');
 		} else {
-			Flags flags = wrap ? Flags.BODY_ONLY : Flags.BODY_ONLY_NOWRAP;
-			makeInsn(wrapInsn, code, flags);
+			makeInsnBody(code, wrapInsn, flags);
 		}
 	}
 
@@ -398,11 +401,15 @@ public class InsnGen {
 				ArgType arrayType = ((NewArrayNode) insn).getArrayType();
 				code.add("new ");
 				useType(code, arrayType.getArrayRootElement());
-				code.add('[');
-				addArg(code, insn.getArg(0));
-				code.add(']');
+				int k = 0;
+				int argsCount = insn.getArgsCount();
+				for (; k < argsCount; k++) {
+					code.add('[');
+					addArg(code, insn.getArg(k), false);
+					code.add(']');
+				}
 				int dim = arrayType.getArrayDimension();
-				for (int i = 0; i < dim - 1; i++) {
+				for (; k < dim - 1; k++) {
 					code.add("[]");
 				}
 				break;
@@ -505,7 +512,7 @@ public class InsnGen {
 				break;
 
 			case ONE_ARG:
-				addArg(code, insn.getArg(0));
+				addArg(code, insn.getArg(0), state);
 				break;
 
 			/* fallback mode instructions */
@@ -572,12 +579,23 @@ public class InsnGen {
 
 			case FILL_ARRAY_DATA:
 				fallbackOnlyInsn(insn);
-				code.add("fill-array " + insn.toString());
+				code.add("fill-array " + insn);
 				break;
 
 			case SWITCH_DATA:
 				fallbackOnlyInsn(insn);
 				code.add(insn.toString());
+				break;
+
+			case MOVE_MULTI:
+				fallbackOnlyInsn(insn);
+				int len = insn.getArgsCount();
+				for (int i = 0; i < len - 1; i += 2) {
+					addArg(code, insn.getArg(i));
+					code.add(" = ");
+					addArg(code, insn.getArg(i + 1));
+					code.add("; ");
+				}
 				break;
 
 			default:
@@ -662,13 +680,17 @@ public class InsnGen {
 		if (insn.isSelf()) {
 			throw new JadxRuntimeException("Constructor 'self' invoke must be removed!");
 		}
+		MethodNode callMth = mth.root().resolveMethod(insn.getCallMth());
 		if (insn.isSuper()) {
+			code.attachAnnotation(callMth);
 			code.add("super");
 		} else if (insn.isThis()) {
+			code.attachAnnotation(callMth);
 			code.add("this");
 		} else {
 			code.add("new ");
-			useClass(code, insn.getClassType());
+			code.attachAnnotation(callMth);
+			mgen.getClassGen().addClsName(code, insn.getClassType());
 			GenericInfoAttr genericInfoAttr = insn.get(AType.GENERIC_INFO);
 			if (genericInfoAttr != null) {
 				code.add('<');
@@ -686,7 +708,6 @@ public class InsnGen {
 				code.add('>');
 			}
 		}
-		MethodNode callMth = mth.root().resolveMethod(insn.getCallMth());
 		generateMethodArguments(code, insn, 0, callMth);
 	}
 

@@ -2,12 +2,16 @@ package jadx.gui.treemodel;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+
+import org.jetbrains.annotations.Nullable;
 
 import jadx.api.ResourceFile;
 import jadx.gui.JadxWrapper;
@@ -18,11 +22,13 @@ import jadx.gui.utils.UiUtils;
 public class JRoot extends JNode {
 	private static final long serialVersionUID = 8888495789773527342L;
 
-	private static final ImageIcon ROOT_ICON = UiUtils.openIcon("java_model_obj");
+	private static final ImageIcon ROOT_ICON = UiUtils.openSvgIcon("nodes/rootPackageFolder");
 
 	private final transient JadxWrapper wrapper;
 
 	private transient boolean flatPackages = false;
+
+	private final List<JNode> customNodes = new ArrayList<>();
 
 	public JRoot(JadxWrapper wrapper) {
 		this.wrapper = wrapper;
@@ -37,10 +43,8 @@ public class JRoot extends JNode {
 			jRes.update();
 			add(jRes);
 		}
-
-		ApkSignature signature = ApkSignature.getApkSignature(wrapper);
-		if (signature != null) {
-			add(signature);
+		for (JNode customNode : customNodes) {
+			add(customNode);
 		}
 	}
 
@@ -108,6 +112,19 @@ public class JRoot extends JNode {
 		}
 	}
 
+	public void replaceCustomNode(@Nullable JNode node) {
+		if (node == null) {
+			return;
+		}
+		Class<?> nodeCls = node.getClass();
+		customNodes.removeIf(n -> n.getClass().equals(nodeCls));
+		customNodes.add(node);
+	}
+
+	public List<JNode> getCustomNodes() {
+		return customNodes;
+	}
+
 	@Override
 	public Icon getIcon() {
 		return ROOT_ICON;
@@ -134,5 +151,22 @@ public class JRoot extends JNode {
 			return paths.get(0).getFileName().toString();
 		}
 		return count + " files";
+	}
+
+	@Override
+	public String getTooltip() {
+		List<Path> paths = wrapper.getOpenPaths();
+		int count = paths.size();
+		if (count < 2) {
+			return null;
+		}
+		// Show list of loaded files (full path)
+		StringBuilder sb = new StringBuilder("<html>");
+		for (Path p : paths) {
+			sb.append(UiUtils.escapeHtml(p.toString()));
+			sb.append("<br>");
+		}
+		sb.append("</html>");
+		return sb.toString();
 	}
 }

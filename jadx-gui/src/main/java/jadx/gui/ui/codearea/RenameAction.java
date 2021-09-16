@@ -2,7 +2,8 @@ package jadx.gui.ui.codearea;
 
 import java.awt.event.ActionEvent;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.KeyStroke;
 import javax.swing.event.PopupMenuEvent;
 
 import org.jetbrains.annotations.Nullable;
@@ -10,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import jadx.gui.treemodel.JNode;
-import jadx.gui.ui.RenameDialog;
+import jadx.gui.ui.dialog.RenameDialog;
 import jadx.gui.utils.NLS;
 import jadx.gui.utils.UiUtils;
 

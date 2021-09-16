@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 import jadx.api.ICodeInfo;
 import jadx.core.utils.StringUtils;
 import jadx.gui.ui.MainWindow;
-import jadx.gui.ui.SearchDialog;
+import jadx.gui.ui.dialog.SearchDialog;
 import jadx.gui.utils.CaretPositionFix;
 import jadx.gui.utils.DefaultPopupMenuListener;
 import jadx.gui.utils.NLS;
